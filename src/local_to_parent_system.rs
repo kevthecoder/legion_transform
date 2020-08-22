@@ -121,97 +121,97 @@ pub fn build() -> impl ParallelRunnable {
         )>::query())
         .build(move |_commands, world, _, queries| {
             let (a, b, c, d, e, f, g, h, i, j, k, l) = queries;
-            rayon::scope(|s| {
-                s.spawn(|_| unsafe {
-                    // Translation
-                    a.for_each_unchecked(world, |(ltw, translation)| {
-                        *ltw = LocalToParent(translation.to_homogeneous());
-                    });
-                });
-                s.spawn(|_| unsafe {
-                    // Rotation
-                    b.for_each_unchecked(world, |(ltw, rotation)| {
-                        *ltw = LocalToParent(rotation.to_homogeneous());
-                    });
-                });
-                s.spawn(|_| unsafe {
-                    // Scale
-                    c.for_each_unchecked(world, |(ltw, scale)| {
-                        *ltw = LocalToParent(Matrix4::new_scaling(scale.0));
-                    });
-                });
-                s.spawn(|_| unsafe {
-                    // NonUniformScale
-                    d.for_each_unchecked(world, |(ltw, non_uniform_scale)| {
-                        *ltw = LocalToParent(Matrix4::new_nonuniform_scaling(&non_uniform_scale.0));
-                    });
 
-                    // Translation + Rotation
-                    e.for_each_unchecked(world, |(ltw, translation, rotation)| {
-                        *ltw = LocalToParent(
-                            rotation
-                                .to_homogeneous()
-                                .append_translation(&translation.vector),
-                        );
-                    });
+            unsafe {
+                // Translation
+                a.for_each_unchecked(world, |(ltw, translation)| {
+                    *ltw = LocalToParent(translation.to_homogeneous());
                 });
-                s.spawn(|_| unsafe {
-                    // Translation + Scale
-                    f.for_each_unchecked(world, |(ltw, translation, scale)| {
-                        *ltw = LocalToParent(translation.to_homogeneous().prepend_scaling(scale.0));
-                    });
+            };
+            unsafe {
+                // Rotation
+                b.for_each_unchecked(world, |(ltw, rotation)| {
+                    *ltw = LocalToParent(rotation.to_homogeneous());
+                });
+            };
+            unsafe {
+                // Scale
+                c.for_each_unchecked(world, |(ltw, scale)| {
+                    *ltw = LocalToParent(Matrix4::new_scaling(scale.0));
+                });
+            };
+            unsafe {
+                // NonUniformScale
+                d.for_each_unchecked(world, |(ltw, non_uniform_scale)| {
+                    *ltw = LocalToParent(Matrix4::new_nonuniform_scaling(&non_uniform_scale.0));
+                });
 
-                    // Translation + NonUniformScale
-                    g.for_each_unchecked(world, |(ltw, translation, non_uniform_scale)| {
-                        *ltw = LocalToParent(
-                            translation
-                                .to_homogeneous()
-                                .prepend_nonuniform_scaling(&non_uniform_scale.0),
-                        );
-                    });
+                // Translation + Rotation
+                e.for_each_unchecked(world, |(ltw, translation, rotation)| {
+                    *ltw = LocalToParent(
+                        rotation
+                            .to_homogeneous()
+                            .append_translation(&translation.vector),
+                    );
                 });
-                s.spawn(|_| unsafe {
-                    // Rotation + Scale
-                    h.for_each_unchecked(world, |(ltw, rotation, scale)| {
-                        *ltw = LocalToParent(rotation.to_homogeneous().prepend_scaling(scale.0));
-                    });
+            };
+            unsafe {
+                // Translation + Scale
+                f.for_each_unchecked(world, |(ltw, translation, scale)| {
+                    *ltw = LocalToParent(translation.to_homogeneous().prepend_scaling(scale.0));
                 });
-                s.spawn(|_| unsafe {
-                    // Rotation + NonUniformScale
-                    i.for_each_unchecked(world, |(ltw, rotation, non_uniform_scale)| {
-                        *ltw = LocalToParent(
-                            rotation
-                                .to_homogeneous()
-                                .prepend_nonuniform_scaling(&non_uniform_scale.0),
-                        );
-                    });
+
+                // Translation + NonUniformScale
+                g.for_each_unchecked(world, |(ltw, translation, non_uniform_scale)| {
+                    *ltw = LocalToParent(
+                        translation
+                            .to_homogeneous()
+                            .prepend_nonuniform_scaling(&non_uniform_scale.0),
+                    );
                 });
-                s.spawn(|_| unsafe {
-                    // Translation + Rotation + Scale
-                    j.for_each_unchecked(world, |(ltw, translation, rotation, scale)| {
+            };
+            unsafe {
+                // Rotation + Scale
+                h.for_each_unchecked(world, |(ltw, rotation, scale)| {
+                    *ltw = LocalToParent(rotation.to_homogeneous().prepend_scaling(scale.0));
+                });
+            };
+            unsafe {
+                // Rotation + NonUniformScale
+                i.for_each_unchecked(world, |(ltw, rotation, non_uniform_scale)| {
+                    *ltw = LocalToParent(
+                        rotation
+                            .to_homogeneous()
+                            .prepend_nonuniform_scaling(&non_uniform_scale.0),
+                    );
+                });
+            };
+            unsafe {
+                // Translation + Rotation + Scale
+                j.for_each_unchecked(world, |(ltw, translation, rotation, scale)| {
+                    *ltw = LocalToParent(
+                        rotation
+                            .to_homogeneous()
+                            .append_translation(&translation.vector)
+                            .prepend_scaling(scale.0),
+                    );
+                });
+            };
+            unsafe {
+                // Translation + Rotation + NonUniformScale
+                k.for_each_unchecked(
+                    world,
+                    |(ltw, translation, rotation, non_uniform_scale)| {
                         *ltw = LocalToParent(
                             rotation
                                 .to_homogeneous()
                                 .append_translation(&translation.vector)
-                                .prepend_scaling(scale.0),
+                                .prepend_nonuniform_scaling(&non_uniform_scale.0),
                         );
-                    });
-                });
-                s.spawn(|_| unsafe {
-                    // Translation + Rotation + NonUniformScale
-                    k.for_each_unchecked(
-                        world,
-                        |(ltw, translation, rotation, non_uniform_scale)| {
-                            *ltw = LocalToParent(
-                                rotation
-                                    .to_homogeneous()
-                                    .append_translation(&translation.vector)
-                                    .prepend_nonuniform_scaling(&non_uniform_scale.0),
-                            );
-                        },
-                    );
-                });
-            });
+                    },
+                );
+            };
+
             // Just to issue warnings: Scale + NonUniformScale
             l.for_each_mut(world, |(entity, mut _ltw, _scale, _non_uniform_scale)| {
                 log::warn!(
